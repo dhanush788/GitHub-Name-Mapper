@@ -1,0 +1,11 @@
+{
+  "name": "github--bot",
+  "version": "1.0.0",
+  "description": "Name display in github contribution.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Dhanush P K",
+  "license": "ISC"
+}
