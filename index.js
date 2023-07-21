@@ -241,14 +241,13 @@ const alphabetIndices = {
   };
 
 const makeCommit = (n, day, letter, i) => {
-  console.log("n", n);
   if (n === 0) {
     return simpleGit().push((pushSummary) => {
       console.log(`Push summary for ${capitalizedName[i]}:`, pushSummary);
       if (i + 1 < capitalizedName.length) {
         setTimeout(() => {
           const nextLetter = capitalizedName[i + 1];
-          const startIndex = (i + 1) * 49 + 1;
+          const startIndex = (i + 1) * 49;
           const elements = alphabetIndices[nextLetter].slice();
           makeCommit(elements.length, startIndex, elements.slice(), i + 1);
         }, 2000); 
@@ -257,10 +256,9 @@ const makeCommit = (n, day, letter, i) => {
   }
 
   const lastValue = letter[letter.length - 1];
-  console.log(letter);
   letter.pop();
   const [d, w] = lastValue;
-  const DATE = moment("20090104").add(d + day, "d").add(w, "w").format();
+  const DATE = moment("20180107").add(d + day, "d").add(w, "w").format();
 
   const data = {
     date: DATE,
@@ -286,8 +284,9 @@ const makeCommit = (n, day, letter, i) => {
   });
 };
 
-
-const capitalizedName = "ABHINAV"; 
+const Name="dhanush";
+const capitalizedName = Name.toUpperCase(); 
+console.log(capitalizedName)
 
 const startIndex = 1;
 const elements = alphabetIndices[capitalizedName[0]].slice();
