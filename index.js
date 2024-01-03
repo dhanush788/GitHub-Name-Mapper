@@ -1,3 +1,4 @@
+const readline = require("readline");
 const moment = require("moment");
 const jsonfile = require("jsonfile");
 const simpleGit = require("simple-git");
@@ -240,54 +241,67 @@ const alphabetIndices = {
     ]
   };
 
-const makeCommit = (n, day, letter, i) => {
-  if (n === 0) {
-    return simpleGit().push((pushSummary) => {
-      console.log(`Push summary for ${capitalizedName[i]}:`, pushSummary);
-      if (i + 1 < capitalizedName.length) {
-        setTimeout(() => {
-          const nextLetter = capitalizedName[i + 1];
-          const startIndex = (i + 1) * 49;
-          const elements = alphabetIndices[nextLetter].slice();
-          makeCommit(elements.length, startIndex, elements.slice(), i + 1);
-        }, 2000); 
+  const makeCommit = (n, day, letter, i, capitalizedName) => {
+    if (n === 0) {
+      return simpleGit().push((pushSummary) => {
+        console.log(`Push summary for ${capitalizedName[i]}:`, pushSummary);
+        if (i + 1 < capitalizedName.length) {
+          setTimeout(() => {
+            const nextLetter = capitalizedName[i + 1];
+            const startIndex = (i + 1) * 49;
+            const elements = alphabetIndices[nextLetter].slice();
+            makeCommit(elements.length, startIndex, elements.slice(), i + 1, capitalizedName);
+          }, 2000);
+        }
+      });
+    }
+  
+    const lastValue = letter[letter.length - 1];
+    letter.pop();
+    const [d, w] = lastValue;
+    const DATE = moment("20180107").add(d + day, "d").add(w, "w").format();
+  
+    const data = {
+      date: DATE,
+    };
+  
+    jsonfile.writeFile(FILE_PATH, data, (err) => {
+      if (err) {
+        console.error("Error writing file:", err);
+        return;
       }
+      console.log("Data written to file:", data);
+  
+      simpleGit()
+        .add(FILE_PATH)
+        .exec(() => {
+          console.log("Changes added.");
+          simpleGit()
+            .commit(DATE, { '--date': DATE }, (commitSummary) => {
+              console.log("Commit summary:", commitSummary);
+              makeCommit(--n, day, letter, i, capitalizedName);
+            });
+        });
     });
-  }
-
-  const lastValue = letter[letter.length - 1];
-  letter.pop();
-  const [d, w] = lastValue;
-  const DATE = moment("20180107").add(d + day, "d").add(w, "w").format();
-
-  const data = {
-    date: DATE,
   };
-
-  jsonfile.writeFile(FILE_PATH, data, (err) => {
-    if (err) {
-      console.error("Error writing file:", err);
+  
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+  
+  rl.question("Enter your name: ", (name) => {
+    rl.close();
+  
+    const capitalizedName = name.toUpperCase();
+    console.log("Capitalized Name:", capitalizedName);
+  
+    if (capitalizedName.length === 0) {
+      console.log("Please provide a valid name.");
       return;
     }
-    console.log("Data written to file:", data);
-
-    simpleGit()
-      .add(FILE_PATH)
-      .exec(() => {
-        console.log("Changes added.");
-        simpleGit()
-          .commit(DATE, { '--date': DATE }, (commitSummary) => {
-            console.log("Commit summary:", commitSummary);
-            makeCommit(--n, day, letter, i);
-          });
-      });
+  
+    const startIndex = 1;
+    const elements = alphabetIndices[capitalizedName[0]].slice();
+    makeCommit(elements.length, startIndex, elements.slice(), 0, capitalizedName);
   });
-};
-
-const Name="dhanush";
-const capitalizedName = Name.toUpperCase(); 
-console.log(capitalizedName)
-
-const startIndex = 1;
-const elements = alphabetIndices[capitalizedName[0]].slice();
-makeCommit(elements.length, startIndex, elements.slice(), 0);
